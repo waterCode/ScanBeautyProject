@@ -2,12 +2,15 @@ package com.example.laozhong.bigimagescaleview;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
+import com.example.laozhong.bigimagescaleview.Adapter.EndlessRecyclerAdapter;
+import com.example.laozhong.bigimagescaleview.Adapter.StaggeredEndlessRecyclerAdapter;
 
 import java.util.List;
 
@@ -15,7 +18,7 @@ import java.util.List;
  * Created by lao.zhong on 2018/3/8.
  */
 
-public class PhotoListAdapter extends RecyclerView.Adapter {
+public class PhotoListAdapter extends StaggeredEndlessRecyclerAdapter<PhotoListAdapter.PhotoViewHolder> {
     private List<Image> mImageList;
     private Context mContext;
     private OnPhotoListener mItemListener ;
@@ -26,34 +29,42 @@ public class PhotoListAdapter extends RecyclerView.Adapter {
         mContext = context;
     }
 
-    @Override
-    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.rv_image_item, parent, false);
-        return new ViewHolder(view);
-    }
+
 
     @Override
-    public void onBindViewHolder(RecyclerView.ViewHolder holder, final int position) {
+    protected PhotoViewHolder onCreateHolder(ViewGroup parent, int viewType) {
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.rv_image_item, parent, false);
+        return new PhotoViewHolder(view);
+    }
+
+
+
+    @Override
+    protected void onBindHolder(PhotoViewHolder holder, int position) {
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 mItemListener.onPhotoClick(position);
             }
         });
-        ImageView imageView = ((ViewHolder) holder).imageView;
+        ImageView imageView = ((PhotoViewHolder) holder).imageView;
         ViewGroup.LayoutParams layoutParams = imageView.getLayoutParams();
         layoutParams.height = mImageList.get(position).getHeight();
         Glide.with(mContext).load(mImageList.get(position).getUrl()).into(imageView);
     }
 
+
+
+
     @Override
-    public int getItemCount() {
+    public int getCount() {
+        Log.d(PhotoListAdapter.class.getName(),"getItemCout");
         return mImageList.size();
     }
 
     public static ImageView getImage(RecyclerView.ViewHolder holder) {
-        if (holder instanceof ViewHolder) {
-            return ((ViewHolder) holder).imageView;
+        if (holder instanceof PhotoViewHolder) {
+            return ((PhotoViewHolder) holder).imageView;
         } else {
             return null;
         }
@@ -65,11 +76,13 @@ public class PhotoListAdapter extends RecyclerView.Adapter {
         this.mItemListener = mItemListener;
     }
 
-    class ViewHolder extends RecyclerView.ViewHolder {
+
+
+    class PhotoViewHolder extends RecyclerView.ViewHolder {
         ImageView imageView;
 
 
-        public ViewHolder(View itemView) {
+        public PhotoViewHolder(View itemView) {
             super(itemView);
             imageView = itemView.findViewById(R.id.image);
         }

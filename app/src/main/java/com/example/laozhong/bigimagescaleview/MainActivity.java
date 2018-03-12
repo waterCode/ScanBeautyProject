@@ -1,7 +1,6 @@
 package com.example.laozhong.bigimagescaleview;
 
 import android.app.Activity;
-import android.content.Context;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
@@ -21,6 +20,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.example.laozhong.bigimagescaleview.Adapter.EndlessRecyclerAdapter;
 import com.google.gson.Gson;
 
 import org.json.JSONObject;
@@ -31,7 +31,8 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements PhotoListAdapter.OnPhotoListener {
     private static String TAG = MainActivity.class.getName();
-    private String url = "http://gank.io/api/random/data/%E7%A6%8F%E5%88%A9/20";
+    private String url = "http://gank.io/api/data/福利/10/";
+    private int mCurrentPage = 1;
     private Gson gson = new Gson();
     private List<Image> mImageList = new ArrayList<>();
     private PhotoListAdapter photoListAdapter;
@@ -44,9 +45,10 @@ public class MainActivity extends AppCompatActivity implements PhotoListAdapter.
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         mActivityView = new ActivityViewHolder(this);
-        initData();
+        loadData();
         initView();
         initPagerAnimator();
+
     }
 
     private void initView() {
@@ -56,6 +58,20 @@ public class MainActivity extends AppCompatActivity implements PhotoListAdapter.
         mActivityView.recyclerView.addItemDecoration(decoration);
         photoListAdapter = new PhotoListAdapter(mImageList, this);
         photoListAdapter.setmItemListener(this);
+        photoListAdapter.setCallbacks(new EndlessRecyclerAdapter.LoaderCallbacks() {
+            @Override
+            public boolean canLoadNextItems() {
+                return true;
+            }
+
+            @Override
+            public void loadNextItems() {
+                Log.d(TAG, "load next page");
+                mCurrentPage++;
+                loadData();
+
+            }
+        });
         mActivityView.recyclerView.setAdapter(photoListAdapter);
     }
 
@@ -64,7 +80,7 @@ public class MainActivity extends AppCompatActivity implements PhotoListAdapter.
      */
     private void initPagerAnimator() {
 
-        pagerAdapter = new PhotoPagerAdapter(this,mActivityView.viewPager,mImageList);
+        pagerAdapter = new PhotoPagerAdapter(this, mActivityView.viewPager, mImageList);
         final SimpleTracker gridTracker = new SimpleTracker() {
             @Override
             public View getViewAt(int pos) {
@@ -84,8 +100,8 @@ public class MainActivity extends AppCompatActivity implements PhotoListAdapter.
 
         listAnimator = GestureTransitions.from(mActivityView.recyclerView, gridTracker)
                 .into(mActivityView.viewPager, pagerTracker);
-        if(listAnimator == null){
-            Log.d("Tag","null");
+        if (listAnimator == null) {
+            Log.d("Tag", "null");
         }
         // Setting up and animating image transition
 /*
@@ -94,28 +110,28 @@ public class MainActivity extends AppCompatActivity implements PhotoListAdapter.
     }
 
 
-
     /*public void applyFullPagerState(){
 
     }*/
-    private void initData() {
-        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, new Response.Listener<JSONObject>() {
+    private void loadData() {
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url + mCurrentPage, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
-                Log.d("cao", response.toString());
+                Log.d(TAG, "response" + response.toString());
                 Data data = gson.fromJson(response.toString(), Data.class);
 
-                Log.d("url", data.getResults()[0].getUrl());
                 for (Image i : data.getResults()) {
                     i.setHeight((int) (400 + 300 * Math.random()));
                 }
                 mImageList.addAll(new ArrayList<Image>(Arrays.asList(data.getResults())));//
+                Log.d(TAG, "size " + mImageList.size());
                 photoListAdapter.notifyDataSetChanged();
+                photoListAdapter.onNextItemsLoaded();//加载完成
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                Log.d("cao", "error");
+                Log.d(TAG, "error");
             }
         });
         Volley.newRequestQueue(this).add(request);
@@ -125,12 +141,12 @@ public class MainActivity extends AppCompatActivity implements PhotoListAdapter.
     @Override
     public void onPhotoClick(int position) {
         //pagerAdapter.setA(true);
-        Log.d(TAG,"onCLick");
+        Log.d(TAG, "onCLick");
         listAnimator.enter(position, true);
     }
 
 
-    class ActivityViewHolder{
+    class ActivityViewHolder {
         RecyclerView recyclerView;
         ViewPager viewPager;
         CircleGestureImageView circleGestureImageView;
