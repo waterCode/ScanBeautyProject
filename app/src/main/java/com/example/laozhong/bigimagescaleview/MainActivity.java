@@ -10,6 +10,7 @@ import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.util.Log;
 import android.view.View;
 
+import com.alexvasilkov.gestures.animation.ViewPositionAnimator;
 import com.alexvasilkov.gestures.commons.RecyclePagerAdapter;
 import com.alexvasilkov.gestures.commons.circle.CircleGestureImageView;
 import com.alexvasilkov.gestures.transition.GestureTransitions;
@@ -30,7 +31,6 @@ import java.util.Arrays;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements PhotoListAdapter.OnPhotoListener {
-    private static String TAG = MainActivity.class.getName();
     private String url = "http://gank.io/api/data/福利/10/";
     private int mCurrentPage = 1;
     private Gson gson = new Gson();
@@ -39,6 +39,7 @@ public class MainActivity extends AppCompatActivity implements PhotoListAdapter.
     private ActivityViewHolder mActivityView;
     private ViewsTransitionAnimator<Integer> listAnimator;
     private PhotoPagerAdapter pagerAdapter;
+    private static final String TAG = MainActivity.class.getName();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -100,14 +101,19 @@ public class MainActivity extends AppCompatActivity implements PhotoListAdapter.
 
         listAnimator = GestureTransitions.from(mActivityView.recyclerView, gridTracker)
                 .into(mActivityView.viewPager, pagerTracker);
-        if (listAnimator == null) {
-            Log.d("Tag", "null");
-        }
+
         // Setting up and animating image transition
-/*
-        listAnimator.addPositionUpdateListener(this::applyFullPagerState);
-*/
+
+        listAnimator.addPositionUpdateListener(new ViewPositionAnimator.PositionUpdateListener() {
+            @Override
+            public void onPositionUpdate(float position, boolean isLeaving) {
+                Log.d(TAG,"position："+position + "isLeaving:" +isLeaving);
+
+            }
+        });
     }
+
+
 
 
     /*public void applyFullPagerState(){
@@ -158,6 +164,9 @@ public class MainActivity extends AppCompatActivity implements PhotoListAdapter.
     }
 
 
+    /**
+     * item间距
+     */
     class SpacesItemDecoration extends RecyclerView.ItemDecoration {
 
         private int space;
