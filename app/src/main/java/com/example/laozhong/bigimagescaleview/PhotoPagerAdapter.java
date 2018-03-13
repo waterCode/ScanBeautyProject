@@ -51,7 +51,7 @@ public class PhotoPagerAdapter extends RecyclePagerAdapter<PhotoPagerAdapter.Vie
 
     public static View getImage(RecyclePagerAdapter.ViewHolder holder) {
         if(holder instanceof  PhotoPagerAdapter.ViewHolder){
-            return ((ViewHolder) holder).progressDialog;
+            return ((ViewHolder) holder).gestureImageView;
         }else {
             return null;
         }
@@ -65,7 +65,7 @@ public class PhotoPagerAdapter extends RecyclePagerAdapter<PhotoPagerAdapter.Vie
             super(LayoutInflater.from(parent.getContext()).inflate(R.layout.full_image_view, parent, false));
 
             gestureImageView = itemView.findViewById(R.id.gesture_ImageView);
-            progressDialog = itemView.findViewById(R.id.loading_progress);
+            //progressDialog = itemView.findViewById(R.id.loading_progress);
 
         }
     }

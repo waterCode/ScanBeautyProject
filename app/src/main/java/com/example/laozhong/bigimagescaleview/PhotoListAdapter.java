@@ -58,7 +58,6 @@ public class PhotoListAdapter extends StaggeredEndlessRecyclerAdapter<PhotoListA
 
     @Override
     public int getCount() {
-        Log.d(PhotoListAdapter.class.getName(),"getItemCout");
         return mImageList.size();
     }
 
