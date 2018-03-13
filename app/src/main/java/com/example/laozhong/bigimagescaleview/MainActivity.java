@@ -12,7 +12,6 @@ import android.view.View;
 
 import com.alexvasilkov.gestures.animation.ViewPositionAnimator;
 import com.alexvasilkov.gestures.commons.RecyclePagerAdapter;
-import com.alexvasilkov.gestures.commons.circle.CircleGestureImageView;
 import com.alexvasilkov.gestures.transition.GestureTransitions;
 import com.alexvasilkov.gestures.transition.ViewsTransitionAnimator;
 import com.alexvasilkov.gestures.transition.tracker.SimpleTracker;
@@ -35,10 +34,10 @@ public class MainActivity extends AppCompatActivity implements PhotoListAdapter.
     private int mCurrentPage = 1;
     private Gson gson = new Gson();
     private List<Image> mImageList = new ArrayList<>();
-    private PhotoListAdapter photoListAdapter;
+    private PhotoListAdapter photoListAdapter;//瀑布流recyclerview的Adapter
     private ActivityViewHolder mActivityView;
-    private ViewsTransitionAnimator<Integer> listAnimator;
-    private PhotoPagerAdapter pagerAdapter;
+    private ViewsTransitionAnimator<Integer> listAnimator;//动画类
+    private PhotoPagerAdapter pagerAdapter;//viewPager的Adapter
     private static final String TAG = MainActivity.class.getName();
 
     @Override
@@ -87,6 +86,9 @@ public class MainActivity extends AppCompatActivity implements PhotoListAdapter.
             public View getViewAt(int pos) {
                 //拿到对应的位置
                 RecyclerView.ViewHolder holder = mActivityView.recyclerView.findViewHolderForLayoutPosition(pos);
+                if (holder == null) {
+                    Log.d(TAG, "grid holder " + "null");
+                }
                 return holder == null ? null : PhotoListAdapter.getImage(holder);
             }
         };
@@ -96,6 +98,10 @@ public class MainActivity extends AppCompatActivity implements PhotoListAdapter.
             @Override
             public View getViewAt(int pos) {
                 RecyclePagerAdapter.ViewHolder holder = pagerAdapter.getViewHolder(pos);
+                if (holder == null) {
+
+                    Log.d(TAG, "viewpager holdzer " + "null");
+                }
                 return holder == null ? null : PhotoPagerAdapter.getImage(holder);
             }
         };
@@ -108,8 +114,9 @@ public class MainActivity extends AppCompatActivity implements PhotoListAdapter.
         listAnimator.addPositionUpdateListener(new ViewPositionAnimator.PositionUpdateListener() {
             @Override
             public void onPositionUpdate(float position, boolean isLeaving) {
-                Log.d(TAG,"position："+position + "isLeaving:" +isLeaving);
-
+                Log.d(TAG, "position：" + position + "isLeaving:" + isLeaving);
+                mActivityView.fullBackGround.setVisibility(position == 0 ? View.INVISIBLE : View.VISIBLE);
+                mActivityView.fullBackGround.setAlpha(position);
             }
         });
     }
@@ -124,9 +131,7 @@ public class MainActivity extends AppCompatActivity implements PhotoListAdapter.
         }
     }
 
-    /*public void applyFullPagerState(){
 
-        }*/
     private void loadData() {
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url + mCurrentPage, new Response.Listener<JSONObject>() {
             @Override
@@ -161,15 +166,18 @@ public class MainActivity extends AppCompatActivity implements PhotoListAdapter.
         listAnimator.enter(position, true);
     }
 
-
+    /**
+     * 当前Activity的视图
+     */
     class ActivityViewHolder {
         RecyclerView recyclerView;
         ViewPager viewPager;
-        CircleGestureImageView circleGestureImageView;
+        View fullBackGround;
 
         public ActivityViewHolder(Activity activity) {
             recyclerView = activity.findViewById(R.id.photo_list);
             viewPager = activity.findViewById(R.id.image_viewpager);
+            fullBackGround = activity.findViewById(R.id.recycler_full_background);
         }
     }
 
