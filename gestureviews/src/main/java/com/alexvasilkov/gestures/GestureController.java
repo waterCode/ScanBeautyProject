@@ -429,14 +429,14 @@ public class GestureController implements View.OnTouchListener {
     @SuppressLint("ClickableViewAccessibility") // performClick is called in gestures callbacks
     @Override
     public boolean onTouch(@NonNull View view, @NonNull MotionEvent event) {
-        MotionEvent viewportEvent = MotionEvent.obtain(event);
-        viewportEvent.offsetLocation(-view.getPaddingLeft(), -view.getPaddingTop());
+        MotionEvent viewportEvent = MotionEvent.obtain(event);//复制一份
+        viewportEvent.offsetLocation(-view.getPaddingLeft(), -view.getPaddingTop());//调整
 
         gestureDetector.setIsLongpressEnabled(view.isLongClickable());
 
         boolean result = gestureDetector.onTouchEvent(viewportEvent);
         result |= scaleDetector.onTouchEvent(viewportEvent);
-        result |= rotateDetector.onTouchEvent(viewportEvent);
+        result |= rotateDetector.onTouchEvent(viewportEvent);//判断是否消费结果
 
         notifyStateSourceChanged();
 
